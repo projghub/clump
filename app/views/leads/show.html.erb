@@ -1,0 +1,49 @@
+<dl>
+  <dt></dt>
+  <dd><%= @lead.first_name %></dd>
+  <dt></dt>
+  <dd><%= @lead.middle_name %></dd>
+  <dt></dt>
+  <dd><%= @lead.last_name %></dd>
+  <dt></dt>
+  <dd><%= @lead.title %></dd>
+  <dt></dt>
+  <dd><%= @lead.gender %></dd>
+  <dt></dt>
+  <dd><%= @lead.date_of_birth %></dd>
+  <dt></dt>
+  <dd><%= @lead.address %></dd>
+  <dt></dt>
+  <dd><%= @lead.address2 %></dd>
+  <dt></dt>
+  <dd><%= @lead.city %></dd>
+  <dt></dt>
+  <dd><%= @lead.region %></dd>
+  <dt></dt>
+  <dd><%= @lead.postal_code %></dd>
+  <dt></dt>
+  <dd><%= @lead.country %></dd>
+  <dt></dt>
+  <dd><%= @lead.phone %></dd>
+  <dt></dt>
+  <dd><%= @lead.email %></dd>
+  <dt></dt>
+  <dd><%= @lead.offer_id %></dd>
+  <dt></dt>
+  <dd><%= @lead.pub_id %></dd>
+  <dt></dt>
+  <dd><%= @lead.sub_id %></dd>
+  <dt></dt>
+  <dd><%= @lead.url %></dd>
+  <dt></dt>
+  <dd><%= @lead.ip_address %></dd>
+  <dt></dt>
+  <dd><%= @lead.acquired_at %></dd>
+</dl>
+
+<h3>Exports</h3>
+<ul>
+<% @lead.lead_exports.each do |export| %>
+  <li><%= export.created_at %></li>
+<% end %>
+</ul>

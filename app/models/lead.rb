@@ -9,8 +9,7 @@ class Lead < ActiveRecord::Base
   validates :email, presence: true, format: { with: VALID_EMAIL_REGEX },
                     uniqueness: { case_sensitive: false }
 
-  private
-
+private
   def self.search(search)
     if search
       where('email LIKE ?', "%#{search}%")

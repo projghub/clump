@@ -1,24 +1,24 @@
-<%= will_paginate(@leads) %>
-
-<%= form_tag root_path, :method => 'get' do %>
+<%= form_tag root_path, :method => 'get', id: "leads_search" do %>
   <p>
   <%= text_field_tag :search, params[:search], {style: "width: 350px"} %>
     <%= submit_tag "Search", :name => nil %>
   </p>
 <% end %>
 
-<table>
+<div id="leads_search"><%= render 'leads' %></div>
+
+<table class="pretty">
   <thead>
     <tr>
-      <th>Email</th>
-      <th>First Name</th>
-      <th>Last name</th>
+      <th><%= sortable "email" %></th>
+      <th><%= sortable "first_name", "First Name" %></th>
+      <th><%= sortable "last_name", "Last Name" %></th>
     </tr>
   </thead>
   <tbody>
     <% @leads.each do |lead| %>
       <tr>
-        <td><%= lead.email unless lead.email.blank? %></td>
+        <td><%= link_to(lead.email, lead) unless lead.email.blank? %></td>
         <td><%= lead.first_name unless lead.first_name.blank? %></td>
         <td><%= lead.last_name unless lead.last_name.blank? %></td>
       </tr>

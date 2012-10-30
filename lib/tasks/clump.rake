@@ -121,7 +121,7 @@ namespace :clump do
         #puts leads.inspect
 
         leads[1..(leads.count - 1)].each do |lead|
-          puts "DELETING: "  + lead.id.to_s
+          puts "DELETING ("  + lead.id.to_s + "): " + record["email"]
           lead.destroy
         end
       end
@@ -131,7 +131,7 @@ namespace :clump do
     task :remove_bogus_emails => :environment do |task_name|
       ActiveRecord::Base.establish_connection()
 
-      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige']
+      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige', '.gov']
 
       bogus_emails.each do |email|
         Lead.where('email LIKE ?', "%#{email}%").destroy_all()
