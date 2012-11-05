@@ -19,18 +19,6 @@ def clean_up_data(key, value)
   value
 end
 
-#class Array
-#  def to_hash
-#    inject({}) { |m, e| m[e[0]] = e[1]; m }
-#  end
-#end
-
-#class Array
-#  def to_hash
-#    inject({}) {|hash, elem| hash.merge!(yield(elem) => elem) }
-#  end
-#end
-
 namespace :clump do
   namespace :leads do
 
@@ -81,20 +69,19 @@ namespace :clump do
       path = arguments[:path]
       limit = arguments[:limit]
       
-      puts arguments.inspect
+      #puts arguments.inspect
 
       ActiveRecord::Base.establish_connection()
 
       limit.to_i.times do
-        lead = Lead.select('leads.first_name, leads.last_name, leads.address, leads.city, leads.region, leads.postal_code, leads.country, leads.email, leads.phone')
-                   .joins('LEFT JOIN lead_exports')
+        lead = Lead.select('leads.id, leads.first_name, leads.last_name, leads.address, leads.city, leads.region, leads.postal_code, leads.country, leads.email, leads.phone')
+                   .joins('LEFT JOIN lead_exports ON lead_exports.lead_id = leads.id')
                    .where('lead_exports.id IS NULL')
                    .first
 
         new_customer = lead.attributes
 
         request = Net::HTTP::Post.new(path)
-
         request["Content-Type"] = "application/json"
         request["Authorization"] = "Token token=#{token}"
 
@@ -102,16 +89,19 @@ namespace :clump do
           'customer' => new_customer
         }.to_json
 
-        puts request.inspect
+        #puts request.inspect
         response = Net::HTTP.new(host, port).start {|http| http.request(request) }
-        puts "Response #{response.code} #{response.message}: #{response.body}"
-        if response.code == 200
+        #puts "Response #{response.code} #{response.message}: #{response.body}"
+        #puts "REPONSE CODE: " + response.code
+        if response.code == '201'
+          time = Time.now.strftime("%Y-%m-%d %H:%M:%S")
+
           sql = "
            INSERT INTO lead_exports (lead_id, created_at, updated_at)
-           VALUES (#{lead_id}, '#{time}', '#{time}')
+           VALUES (#{lead.id}, '#{time}', '#{time}')
           "
-          puts sql
-          #result = ActiveRecord::Base.connection.execute(sql)
+          #puts sql
+          result = ActiveRecord::Base.connection.execute(sql)
         end
       end
     end
@@ -141,15 +131,31 @@ namespace :clump do
     end
 
     desc 'find and remove bogus emails'
-    task :remove_bogus_emails => :environment do |task_name|
+    task :remove_bogus_info => :environment do |task_name|
       ActiveRecord::Base.establish_connection()
 
-      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige', '.gov', 'downington', 'fuck', 'pussy', 'scam', ',', '`', '[', ']', ';', 'a@b.com', 'attorney', '!', '#', '~']
+      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige', '.gov', 'downington', 'fuck', 'pussy', 'scam', ',', '`', '[', ']', ';', 'a@b.com', 'attorney', '!', '#', '~', 'novagroup', 'dskadk', 'l.park@novagrou']
 
       bogus_emails.each do |email|
         Lead.where('email LIKE ?', "%#{email}%").destroy_all()
         puts "DELETING emails LIKE: " + email
       end
+
+      bogus_names = ['Test']
+
+      bogus_names.each do |name|
+        Lead.where('first_name LIKE ?', "%#{name}%").destroy_all()
+        puts "DELETING names LIKE: " + name 
+      end
+
+      bogus_phones = ['99999', '88888', '77777', '66666', '55555', '44444', '33333', '22222', '11111', '1234']
+
+      bogus_phones.each do |phone|
+        Lead.where('phone LIKE ?', "%#{phone}%").destroy_all()
+        puts "DELETING phones LIKE: " + phone
+      end
+
+
     end
 
   end
