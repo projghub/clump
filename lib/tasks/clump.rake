@@ -19,6 +19,18 @@ def clean_up_data(key, value)
   value
 end
 
+#class Array
+#  def to_hash
+#    inject({}) { |m, e| m[e[0]] = e[1]; m }
+#  end
+#end
+
+#class Array
+#  def to_hash
+#    inject({}) {|hash, elem| hash.merge!(yield(elem) => elem) }
+#  end
+#end
+
 namespace :clump do
   namespace :leads do
 
@@ -62,13 +74,12 @@ namespace :clump do
       require 'net/http'
       require 'json'
 
-      arguments.with_defaults(host: 'lvh.me', port: '80', token: 'abc1234', path: '/api/leads/new', limit: 1, chunk: 1)
+      arguments.with_defaults(host: 'lvh.me', port: '80', token: 'abc1234', path: '/api/leads/create', limit: 1)
       host = arguments[:host]
       port = arguments[:port]
       token = arguments[:token]
       path = arguments[:path]
       limit = arguments[:limit]
-      chunk = arguments[:chunk]
       
       puts arguments.inspect
 
@@ -78,18 +89,20 @@ namespace :clump do
         lead = Lead.select('leads.first_name, leads.last_name, leads.address, leads.city, leads.region, leads.postal_code, leads.country, leads.email, leads.phone')
                    .joins('LEFT JOIN lead_exports')
                    .where('lead_exports.id IS NULL')
-                   .order('leads.created_at DESC')
-                   .limit(chunk)
+                   .first
 
-        puts lead.inspect
+        new_customer = lead.attributes
 
-        request = Net::HTTP::Post.new(path, initheader = {'Content-Type' =>'application/json'})
+        request = Net::HTTP::Post.new(path)
+
+        request["Content-Type"] = "application/json"
+        request["Authorization"] = "Token token=#{token}"
+
         request.body = {
-          'token' => token,
-          'data' => lead
+          'customer' => new_customer
         }.to_json
 
-        puts request.body.inspect
+        puts request.inspect
         response = Net::HTTP.new(host, port).start {|http| http.request(request) }
         puts "Response #{response.code} #{response.message}: #{response.body}"
         if response.code == 200
@@ -98,7 +111,7 @@ namespace :clump do
            VALUES (#{lead_id}, '#{time}', '#{time}')
           "
           puts sql
-          result = ActiveRecord::Base.connection.execute(sql)
+          #result = ActiveRecord::Base.connection.execute(sql)
         end
       end
     end
@@ -131,7 +144,7 @@ namespace :clump do
     task :remove_bogus_emails => :environment do |task_name|
       ActiveRecord::Base.establish_connection()
 
-      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige', '.gov']
+      bogus_emails = ['test', 'bgbng.com', 'campheroes.com', 'asdf', 'taige', '.gov', 'downington', 'fuck', 'pussy', 'scam', ',', '`', '[', ']', ';', 'a@b.com', 'attorney', '!', '#', '~']
 
       bogus_emails.each do |email|
         Lead.where('email LIKE ?', "%#{email}%").destroy_all()
