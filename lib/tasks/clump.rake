@@ -57,7 +57,7 @@ namespace :clump do
     end
 
     desc 'Find data that has not been exported and send them to DISPATCH'
-    task :export_to_DISPATCH, [:host, :port, :token, :path, :limit, :chunk] => :environment do |task_name, arguments|
+    task :export_to_DISPATCH, [:host, :port, :token, :path, :limit] => :environment do |task_name, arguments|
 
       require 'net/http'
       require 'json'
